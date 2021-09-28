@@ -1,0 +1,26 @@
+***Steps to create python virtual environment:***
+-----------------------------
+
+1) To create a new virual env for the new folder: flask-ecommerce-mini-project/, run the below command
+	$virtualenv flask-ecommerce-mini-project/ 
+2) run: $source flask-ecommerce-mini-project/Scripts/activate
+3) To check if it's selecting the python.exe from inside virtual env,
+   run: $which python 
+4) cd flask-ecommerce-mini-project/
+5) run: $pip install Flask
+6) run: $pip install Flask-Bcrypt
+7) run: $pip install Flask-Login 
+8) run: $pip list --check if the following packages are available in the list now.
+	Flask              2.0.1
+	Flask-Bcrypt       0.7.1
+	Flask-Login        0.5.0
+7) To deactivate virtual env: run $deactivate 
+8) The next time you want to activate this virtualenv, simply run: source flask-ecommerce-mini-project/Scripts/activate
+
+***Order of code Execution:***
+-----------------------------
+
+9) Execute the setup.py file to create the Database and tables.
+	$python setup.py
+10) Execute the app.py file
+Make sure the server is up and running in your local machine. And you're all ready to send HTTP requests via Postman( I used postman tool to test API's)

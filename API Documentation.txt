@@ -1,0 +1,534 @@
+**API Documentation**
+note: Please set the language as 'Markdown(Default)' if you are using notepad++ to view this documentation.
+-------------------------
+**Usecase**
+Ecommerce Backend
+
+Suppose you are a Full-Stack Developer who is tasked to implement the backend for an e-commerce website. You are supposed to implement this backend in Flask with SQLite database.
+
+You are supposed to use the same database schema that you created for the databases assignment. Please make necessary changes to it if needed.
+
+You are supposed to implement the complete backend system which allows you to signup customers and vendors, login them using their credentials, as a vendor add items in the database, as a customer place an order, and as an admin, I should be able to see all the orders placed etc.
+
+Below are the various endpoints that one can send HTTP requests to as described.
+
+**Signup**
+-------------------------
+  This is a signup API. This takes “full_name, username, password, level” as parameters. Here level is 0 for the customer, 1 for vendor and 2 for Admin.
+
+* **URL**
+	/customers
+
+* **Method:**
+  `POST`
+  
+* **URL Params**
+	None
+
+* **Data Params**
+	```{"full_name": "Sehari", "username":"seha123", "password": "test123", "level":0}```
+	**Required:**
+	`username=[alphanumeric]`
+	`password=[alphanumeric]`
+	`level=[int]`
+	
+	**Optional:**
+	`full_name=[text]`
+
+* **Success Response:**
+	`{"message": "Customer successfully added", "status": 200}`
+
+* **Error Response:**
+	`{"status": 400, "message": "Please provide required data to signup/register"}`
+
+  OR
+  If user fails to provide information to mandatory fields:
+	``` {
+    "status": 400,
+    "message": "Username, Password and Level data is mandatory to signup/register"
+	} ```
+	
+OR
+	Customers who are already logged in are not allowed to register.
+```{
+    "message": "You are unauthorized to make this request.",
+    "status": 401
+}```
+
+OR
+	The level number passed in the POST request must be 0 or 1 or 2. Otherwise, a CHECK constraint error is raised.
+```{
+    "message": "CHECK constraint failed: Customers",
+    "status": 400
+}```
+
+
+**Login**
+-------------------------
+  User login/authentication/session management. This API takes the username and password of signed up users and successfully logs them in.
+
+* **URL**
+	/login
+
+* **Method:**
+  `POST`
+  
+* **URL Params**
+	None
+
+* **Data Params**
+	` {"username":"seha123", "password": "test123"} `
+	
+	**Required:**
+	`username=[alphanumeric]`
+	`password=[alphanumeric]`
+
+* **Success Response:**
+	```{
+    "message": "Logged in as: seha123",
+    "status": 200
+}```
+
+* **Error Response:**
+	```{
+    "message": "You must provide username and password to login!",
+    "status": 400
+}```
+
+	OR
+	``` {
+    "message": "Bad login!",
+    "status": 400
+} ```
+
+	OR
+```{
+    "message": "You are unauthorized to make this request.",
+    "status": 401
+}```
+
+**Get all users details**
+-------------------------
+  Display all users in the database. User must be logged in to view the list.
+
+* **URL**
+	/customers
+
+* **Method:**
+  `GET`
+  
+* **URL Params**
+	None
+
+* **Data Params**
+	None
+
+* **Success Response:**
+	```
+	{
+    "customers": {
+        "jas123": {
+            "customer_id": 5,
+            "full_name": "Jasmine",
+            "level": 0,
+            "password": "$2b$12$0AJdLxVhaN5C.0YZibCwxecoO.MrUbL3ED6X1TL0KFGwH1TPdtPfe",
+            "username": "jas123"
+        },
+        "mahi123": {
+            "customer_id": 2,
+            "full_name": "Mahesh",
+            "level": 1,
+            "password": "$2b$12$7KtdhXvnllQxGX5Vhoe/YOwRHCETb53kC0g6KfFxaQMPfafmzmTre",
+            "username": "mahi123"
+        }
+	}
+	}```
+
+* **Error Response:**
+
+	``` {
+    "message": "You are unauthorized to make this request.",
+    "status": 401
+} ```
+
+**Add vendor**
+-------------------------
+  Only added customers can be made vendors. This API takes “customer_id, store_name” as parameters.
+
+* **URL**
+	/vendors
+
+* **Method:**
+  `POST`
+  
+* **URL Params**
+	None
+
+* **Data Params**
+	```{"customer_id": 2, "store_name": "Sehari super market"}```
+	**Required:**
+	`customer_id=[int]`
+	`store_name=[text]`
+
+* **Success Response:**
+	```{
+    "message": "Vendor successfully added",
+    "status": 200
+}```
+
+* **Error Response:**
+	When customer_id is not registered as a vendor in customer table (or) When values are not passed to the two mandatory fields
+	``` {
+    "message": "Your registered Customer ID and Store name fields are mandatory to add a vendor",
+    "status": 400
+}```
+
+  OR
+  We cannot add a vendor who is not registered as a customer
+	``` {
+    "message": "FOREIGN KEY constraint failed",
+    "status": 400
+} ```
+
+**Get all vendors details**
+-------------------------
+  Only logged in users can call this API. This returns all the vendor details with their store and item offerings.
+
+
+* **URL**
+	/vendors
+
+* **Method:**
+  `GET`
+  
+* **URL Params**
+	None
+
+* **Data Params**
+	None
+
+* **Success Response:**
+	```
+	{
+    "vendors": {
+        "1": {
+            "customer_id": 2,
+            "store_name": "Sehari super market",
+            "vendor_id": 1
+        },
+        "2": {
+            "customer_id": 3,
+            "store_name": "Vani super market",
+            "vendor_id": 2
+        },
+        "3": {
+            "customer_id": 7,
+            "store_name": "Nadhi super market",
+            "vendor_id": 3
+        }
+    }
+}```
+
+* **Error Response:**
+	
+	``` {
+    "message": "You are unauthorized to make this request.",
+    "status": 401
+} ```
+
+**Add Items**
+-------------------------
+  Only logged in vendors can add items. This API takes “item_name, vendor_id, available_quantity, unit_price”
+
+* **URL**
+	/items
+
+* **Method:**
+  `POST`
+  
+* **URL Params**
+	None
+
+* **Data Params**
+	```{"item_name": "HP Laptop", "vendor_id": 1, "available_quantity": 25, "unit_price": 26999}```
+	**Required:**
+	`item_name=[text]`
+	`vendor_id=[int]`
+	`available_quantity=[int]`
+	`unit_price=[real]`
+
+* **Success Response:**
+	```{
+    "message": "Item successfully added",
+    "status": 200
+}```
+
+* **Error Response:**
+	``` {
+    "message": "You are unauthorized to make this request.",
+    "status": 401
+} ```
+OR
+```{
+    "message": "Only logged in vendors can add items",
+    "status": 400
+}```
+OR
+  Only existing and logged in vendors can add items:
+	```{
+    "message": "FOREIGN KEY constraint failed",
+    "status": 400
+} ```
+
+OR
+	If the user fails to enter the info in all mandatory fields:
+```{
+    "message": "Itemname, Vendor ID, Available Quantity and Unit price must be entered to add an item",
+    "status": 400
+}```
+
+**Get all Items details**
+-------------------------
+  Only logged in users can call this API. This returns all the items details from the Database.
+
+
+* **URL**
+	/items
+
+* **Method:**
+  `GET`
+  
+* **URL Params**
+	None
+
+* **Data Params**
+	None
+
+* **Success Response:**
+	```
+	{
+    "items": {
+        "1": {
+            "available_quantity": 25,
+            "item_id": 1,
+            "item_name": "HP Laptop",
+            "unit_price": 26999.0,
+            "vendor_id": 1
+        },
+        "2": {
+            "available_quantity": 50,
+            "item_id": 2,
+            "item_name": "ASUS Laptop",
+            "unit_price": 23999.0,
+            "vendor_id": 3
+        }
+    }
+}```
+
+* **Error Response:**
+	
+	``` {
+    "message": "You are unauthorized to make this request.",
+    "status": 401
+} ```
+
+**Place order**
+-------------------------
+ Only logged in customers can place orders. This API takes “customer_id, item_id, quantity” as parameters.
+
+* **URL**
+	/orders
+
+* **Method:**
+  `POST`
+  
+* **URL Params**
+	None
+
+* **Data Params**
+	```{"customer_id":1, "item_id": 1, "quantity": 1}```
+	**Required:**
+	`customer_id=[int]`
+	`item_id=[int]`
+	`quantity=[int]`
+
+* **Success Response:**
+	```{
+    "message": "Order successfully added",
+    "status": 200
+}```
+
+* **Error Response:**
+	```{
+    "message": "Customer ID, Item ID and Quantity must be entered to place orders",
+    "status": 400
+}```
+
+  OR
+	Only logged in customers can place orders.
+	``` {
+    "message": "FOREIGN KEY constraint failed",
+    "status": 400
+}```
+	
+	OR
+	Only logged in customers can place orders:
+	```{
+    "message": "You are unauthorized to make this request.",
+    "status": 401
+}```
+
+	OR
+	only a logged-in customer(level-0) can place orders
+	```{
+    "message": "Only logged in customers can place orders",
+    "status": 400
+}```
+
+**Get all orders details**
+-------------------------
+  Only the admin(level=2) can call this API. This API returns all the orders in the orders table.
+
+
+* **URL**
+	/orders
+
+* **Method:**
+  `GET`
+  
+* **URL Params**
+	None
+
+* **Data Params**
+	None
+
+* **Success Response:**
+	```
+	{
+    "Orders": {
+        "1": {
+            "customer_id": 1,
+            "item_id": 1,
+            "order_id": 1,
+            "quantity": 1
+        },
+        "2": {
+            "customer_id": 6,
+            "item_id": 2,
+            "order_id": 2,
+            "quantity": 2
+        }
+    }
+}```
+
+* **Error Response:**
+	``` {
+    "message": "You are unauthorized to make this request.",
+    "status": 401
+} ```
+
+**Search Item by Name**
+-------------------------
+  Any logged-in customer or vendor can call this API. This API takes item_name as parameter and returns all the items with the given name.
+
+
+* **URL**
+	/items/<item_name>
+
+* **Method:**
+  `GET`
+  
+* **URL Params**
+	`<item_name>`
+	example: item_name = HP Laptop
+
+* **Data Params**
+	None
+
+* **Success Response:**
+	```
+	{
+    "items": {
+        "1": {
+            "available_quantity": 25,
+            "item_id": 1,
+            "item_name": "HP Laptop",
+            "unit_price": 26999.0,
+            "vendor_id": 1
+        }
+    }
+}```
+
+* **Error Response:**
+	``` {
+    "message": "You are unauthorized to make this request.",
+    "status": 401
+} ```
+
+**Get all orders by customer**
+-------------------------
+  Only logged in user can call this API. This returns all the orders placed by that customer. This takes “customer_id” as a parameter.
+
+
+* **URL**
+	/orders/<customer_id>
+
+* **Method:**
+  `GET`
+  
+* **URL Params**
+	`<customer_id>`
+	example: customer_id = 6
+
+* **Data Params**
+	None
+
+* **Success Response:**
+	```
+	{
+    "Orders": {
+        "2": {
+            "customer_id": 6,
+            "item_id": 2,
+            "order_id": 2,
+            "quantity": 2
+        },
+        "3": {
+            "customer_id": 6,
+            "item_id": 2,
+            "order_id": 3,
+            "quantity": 2
+        }
+}```
+
+* **Error Response:**
+	``` {
+    "message": "You are unauthorized to make this request.",
+    "status": 401
+} ```
+
+**Logout**
+-------------------------
+  This API should log out the customer. User logout/authentication/session management.
+
+
+* **URL**
+	/logout
+
+* **Method:**
+  `POST`
+  
+* **URL Params**
+	None
+
+* **Data Params**
+	None
+
+* **Success Response:**
+	`You are logged out!`
+
+* **Error Response:**
+	``` {
+    "message": "You are unauthorized to make this request.",
+    "status": 401
+} ```
